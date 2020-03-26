@@ -2,21 +2,17 @@ import { createTestClient } from 'apollo-server-testing'
 import { ApolloServer, gql } from 'apollo-server-express'
 import schema from '../../schema'
 
-// jest.spyOn(Date, 'now')
-//   .mockImplementation(() => new Date('2020-03-26T10:00:00.000Z').getTime())
-
-describe('Query.chats', () => {
-  it('should fetch all chats', async () => {
+describe('Query.chat', () => {
+  it('should fetch specified chat', async () => {
     const server = new ApolloServer({ schema })
-
-    console.log('Date.now()', Date.now())
 
     const { query } = createTestClient(server)
 
     const res = await query({
+      variables: { chatId: '1' },
       query: gql`
-        query GetChats {
-          chats {
+        query GetChat($chatId: ID!) {
+          chat(chatId: $chatId) {
             id
             name
             picture
