@@ -2,7 +2,7 @@ import http from 'http'
 import express from 'express'
 import cors from 'cors'
 import { ApolloServer, PubSub } from 'apollo-server-express'
-import { chats } from './db'
+import { users } from './db'
 import schema from './schema'
 
 const app = express()
@@ -14,14 +14,13 @@ app.get('/_ping', (req, res) => {
   res.send('pong')
 })
 
-app.get('/chats', (req, res) => {
-  res.json(chats)
-})
-
 const pubsub = new PubSub()
 const server = new ApolloServer({
   schema,
-  context: () => ({ pubsub }),
+  context: () => ({
+    currentUser: users.find((u) => u.id === '1'),
+    pubsub,
+  }),
 })
 
 server.applyMiddleware({
