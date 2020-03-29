@@ -1,3 +1,4 @@
+import http from 'http'
 import express from 'express'
 import cors from 'cors'
 import { ApolloServer, PubSub } from 'apollo-server-express'
@@ -28,8 +29,11 @@ server.applyMiddleware({
   path: '/graphql',
 })
 
+const httpServer = http.createServer(app)
+server.installSubscriptionHandlers(httpServer)
+
 const port = process.env.PORT || 4000
 
-app.listen(port, () => {
+httpServer.listen(port, () => {
   console.log(`Server is listening on port ${port}`)
 })
