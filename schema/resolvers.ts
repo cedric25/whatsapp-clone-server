@@ -115,7 +115,7 @@ const resolvers: Resolvers = {
       return message
     },
 
-    addChat(root, { recipientId }, { currentUser }) {
+    addChat(root, { recipientId }, { currentUser, pubsub }) {
       if (!currentUser) return null
       if (!users.some((u) => u.id === recipientId)) return null
 
@@ -137,7 +137,35 @@ const resolvers: Resolvers = {
 
       chats.push(chat)
 
+      pubsub.publish('chatAdded', {
+        chatAdded: chat,
+      })
+
       return chat
+    },
+
+    removeChat(root, { chatId }, { currentUser }) {
+      if (!currentUser) return null
+
+      const chatIndex = chats.findIndex((c) => c.id === chatId)
+
+      if (chatIndex === -1) return null
+
+      const chat = chats[chatIndex]
+
+      if (!chat.participants.some((p) => p === currentUser.id)) return null
+
+      chat.messages.forEach((chatMessage) => {
+        const chatMessageIndex = messages.findIndex((m) => m.id === chatMessage)
+
+        if (chatMessageIndex !== -1) {
+          messages.splice(chatMessageIndex, 1)
+        }
+      })
+
+      chats.splice(chatIndex, 1)
+
+      return chatId
     },
   },
 
@@ -150,6 +178,16 @@ const resolvers: Resolvers = {
           return [messageAdded.sender, messageAdded.recipient].includes(
             currentUser.id
           )
+        }
+      ),
+    },
+
+    chatAdded: {
+      subscribe: withFilter(
+        (root, args, { pubsub }) => pubsub.asyncIterator('chatAdded'),
+        ({ chatAdded }: { chatAdded: Chat }, args, { currentUser }) => {
+          if (!currentUser) return false
+          return chatAdded.partcipants.some((p) => p === currentUser.id)
         }
       ),
     },
