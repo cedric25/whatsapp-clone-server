@@ -167,8 +167,7 @@ const resolvers: Resolvers = {
 
       pubsub.publish('chatRemoved', {
         chatRemoved: chat.id,
-        targetChat,
-        chat,
+        targetChat: chat,
       })
 
       return chatId
@@ -193,7 +192,7 @@ const resolvers: Resolvers = {
         (root, args, { pubsub }) => pubsub.asyncIterator('chatAdded'),
         ({ chatAdded }: { chatAdded: Chat }, args, { currentUser }) => {
           if (!currentUser) return false
-          return chatAdded.partcipants.some((p) => p === currentUser.id)
+          return chatAdded.participants.some((p) => p === currentUser.id)
         }
       ),
     },
@@ -203,7 +202,7 @@ const resolvers: Resolvers = {
         (root, args, { pubsub }) => pubsub.asyncIterator('chatRemoved'),
         ({ targetChat }: { targetChat: Chat }, args, { currentUser }) => {
           if (!currentUser) return false
-          return targetChat.partcipants.some((p) => p === currentUser.id)
+          return targetChat.participants.some((p) => p === currentUser.id)
         }
       ),
     },
