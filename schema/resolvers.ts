@@ -1,7 +1,10 @@
 import { withFilter } from 'apollo-server-express'
 import { DateTimeResolver, URLResolver } from 'graphql-scalars'
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
 import { User, Message, Chat, chats, messages, users } from '../db'
 import { Resolvers } from '../types/graphql'
+import { secret, expiration } from '../env'
 
 const resolvers: Resolvers = {
   Date: DateTimeResolver,
@@ -78,6 +81,26 @@ const resolvers: Resolvers = {
   },
 
   Mutation: {
+    signIn(root, { username, password }, { res }) {
+      const user = users.find((u) => u.username === username)
+
+      if (!user) {
+        throw new Error('user not found')
+      }
+
+      const passwordMatch = bcrypt.compareSync(password, user.password)
+
+      if (!passwordMatch) {
+        throw new Error('password is incorrect')
+      }
+
+      const authToken = jwt.sign(username, secret)
+
+      res.cookie('authToken', authToken, { maxAge: expiration })
+
+      return user
+    },
+
     addMessage(root, { chatId, content }, { currentUser, pubsub }) {
       if (!currentUser) return null
 
