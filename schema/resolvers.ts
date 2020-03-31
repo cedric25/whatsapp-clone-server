@@ -9,6 +9,8 @@ import { validateLength, validatePassword } from '../validators'
 import sql from 'sql-template-strings'
 import axios from 'axios'
 import { RandomPhoto } from '../types/unsplash'
+import { trackProvider } from '@safe-api/middleware'
+import { resolve } from 'path'
 
 const resolvers: Resolvers = {
   Date: DateTimeResolver,
@@ -16,10 +18,12 @@ const resolvers: Resolvers = {
 
   Message: {
     createdAt(message) {
+      console.log('-> Message createdAt')
       return new Date(message.created_at)
     },
 
     async chat(message, args, { context: { db } }) {
+      console.log('-> Message chat')
       const { rows } = await db.query(sql`
         SELECT * FROM chats WHERE id = ${message.chat_id}
       `)
@@ -27,6 +31,7 @@ const resolvers: Resolvers = {
     },
 
     async sender(message, args, { db }) {
+      console.log('-> Message sender')
       const { rows } = await db.query(sql`
         SELECT * FROM users WHERE id = ${message.sender_user_id}
       `)
@@ -34,6 +39,7 @@ const resolvers: Resolvers = {
     },
 
     async recipient(message, args, { db }) {
+      console.log('-> Message recipient')
       const { rows } = await db.query(sql`
         SELECT users.* FROM users, chats_users
         WHERE chats_users.user_id != ${message.sender_user_id}
@@ -43,12 +49,14 @@ const resolvers: Resolvers = {
     },
 
     isMine(message, args, { currentUser }) {
+      console.log('-> Message isMine')
       return message.sender_user_id === currentUser.id
     },
   },
 
   Chat: {
     async name(chat, args, { currentUser, db }) {
+      console.log('-> Chat name')
       if (!currentUser) return null
 
       const { rows } = await db.query(sql`
@@ -63,6 +71,7 @@ const resolvers: Resolvers = {
     },
 
     async picture(chat, args, { currentUser, db }) {
+      console.log('-> Chat picture')
       if (!currentUser) return null
 
       const { rows } = await db.query(sql`
@@ -78,22 +87,42 @@ const resolvers: Resolvers = {
         return participant.picture
       }
 
+      interface RandomPhotoInput {
+        query: string
+        orientation: 'landscape' | 'portrait' | 'squarish'
+      }
+
+      const trackedRandomPhoto = await trackProvider(
+        async ({ query, orientation }: RandomPhotoInput) =>
+          (
+            await axios.get<RandomPhoto>(
+              'https://api.unsplash.com/photos/random',
+              {
+                params: {
+                  query,
+                  orientation,
+                },
+                headers: {
+                  Authorization:
+                    'Client-ID 4d048cfb4383b407eff92e4a2a5ec36c0a866be85e64caafa588c110efad350d',
+                },
+              }
+            )
+          ).data,
+        {
+          provider: 'Unsplash',
+          method: 'RandomPhoto',
+          location: resolve(__dirname, '../logs/main'),
+        }
+      )
+
       try {
         return (
-          await axios.get<RandomPhoto>(
-            'https://api.unsplash.com/photos/random',
-            {
-              params: {
-                query: 'portrait',
-                orientation: 'squarish',
-              },
-              headers: {
-                Authorization:
-                  'Client-ID 4d048cfb4383b407eff92e4a2a5ec36c0a866be85e64caafa588c110efad350d',
-              },
-            }
-          )
-        ).data.urls.small
+          await trackedRandomPhoto({
+            query: 'portrait',
+            orientation: 'squarish',
+          })
+        ).urls.small
       } catch (err) {
         console.error('Cannot retrieve random photo:', err)
         return null
@@ -101,6 +130,7 @@ const resolvers: Resolvers = {
     },
 
     async messages(chat, args, { db }) {
+      console.log('-> Chat messages')
       const { rows } = await db.query(
         sql`SELECT * FROM messages WHERE chat_id = ${chat.id}`
       )
@@ -109,6 +139,7 @@ const resolvers: Resolvers = {
     },
 
     async lastMessage(chat, args, { db }) {
+      console.log('-> Chat lastMessage')
       const { rows } = await db.query(sql`
         SELECT * FROM messages 
         WHERE chat_id = ${chat.id} 
@@ -119,6 +150,7 @@ const resolvers: Resolvers = {
     },
 
     async participants(chat, args, { db }) {
+      console.log('-> Chat participants')
       const { rows } = await db.query(sql`
         SELECT users.* FROM users, chats_users
         WHERE chats_users.chat_id = ${chat.id}
@@ -151,6 +183,7 @@ const resolvers: Resolvers = {
     },
 
     async chat(root, { chatId }, { currentUser, db }) {
+      console.log('--> chat')
       if (!currentUser) return null
 
       const { rows } = await db.query(sql`
@@ -164,6 +197,7 @@ const resolvers: Resolvers = {
     },
 
     async users(root, args, { currentUser, db }) {
+      console.log('--> users')
       if (!currentUser) return []
 
       const { rows } = await db.query(sql`
