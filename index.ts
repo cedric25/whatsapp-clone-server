@@ -36,12 +36,11 @@ const server = new ApolloServer({
     if (req.cookies.authToken) {
       const username = jwt.verify(req.cookies.authToken, secret) as string
       if (username) {
-        console.log('username', username)
+        console.log('REQUEST from username', username)
         const { rows } = await pool.query(
           sql`SELECT * FROM users WHERE username = ${username}`
         )
         currentUser = rows[0]
-        console.log('currentUser', currentUser)
       }
     }
 
