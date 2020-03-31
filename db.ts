@@ -70,7 +70,9 @@ export async function initDb(): Promise<void> {
 }
 
 export const resetDb = async () => {
+  console.log('before init')
   await initDb()
+  console.log('after init')
 
   const sampleUsers = [
     {

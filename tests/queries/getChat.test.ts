@@ -1,3 +1,5 @@
+// yarn test -- getChat.test
+
 import { createTestClient } from 'apollo-server-testing'
 import { ApolloServer, gql } from 'apollo-server-express'
 import schema from '../../schema'

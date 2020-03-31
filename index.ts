@@ -6,7 +6,7 @@ import { app } from './app'
 import { pool } from './db'
 import { origin, port, secret } from './env'
 import schema from './schema'
-import { MyContext } from './context'
+// import { MyContext } from './context'
 import sql from 'sql-template-strings'
 const { PostgresPubSub } = require('graphql-postgres-subscriptions')
 
@@ -21,6 +21,7 @@ const pubsub = new PostgresPubSub({
 const server = new ApolloServer({
   schema,
   context: async (session: any) => {
+    console.log('Start to build context...')
     // Access the request object
     let req = session.connection
       ? session.connection.context.request
@@ -35,10 +36,12 @@ const server = new ApolloServer({
     if (req.cookies.authToken) {
       const username = jwt.verify(req.cookies.authToken, secret) as string
       if (username) {
+        console.log('username', username)
         const { rows } = await pool.query(
           sql`SELECT * FROM users WHERE username = ${username}`
         )
         currentUser = rows[0]
+        console.log('currentUser', currentUser)
       }
     }
 
@@ -63,10 +66,10 @@ const server = new ApolloServer({
       }
     },
   },
-  formatResponse: (res: any, { context }: { context: MyContext }) => {
-    context.db.release()
-    return res
-  },
+  // formatResponse: (res: any, { db }) => {
+  //   db.release()
+  //   return res
+  // },
 })
 
 server.applyMiddleware({

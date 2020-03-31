@@ -17,7 +17,7 @@ const resolvers: Resolvers = {
       return new Date(message.created_at)
     },
 
-    async chat(message, args, { db }) {
+    async chat(message, args, { context: { db } }) {
       const { rows } = await db.query(sql`
         SELECT * FROM chats WHERE id = ${message.chat_id}
       `)
@@ -105,10 +105,14 @@ const resolvers: Resolvers = {
 
   Query: {
     me(root, args, { currentUser }) {
+      console.log('--> me')
+      console.log('> currentUser', currentUser)
       return currentUser || null
     },
 
     async chats(root, args, { currentUser, db }) {
+      console.log('--> chats')
+      console.log('currentUser', currentUser)
       if (!currentUser) return []
 
       const { rows } = await db.query(sql`
@@ -169,6 +173,7 @@ const resolvers: Resolvers = {
     },
 
     async signUp(root, { name, username, password, passwordConfirm }, { db }) {
+      console.log('--> signUp', name, username, password)
       validateLength('req.name', name, 3, 50)
       validateLength('req.username', username, 3, 18)
       validatePassword('req.password', password)
@@ -177,6 +182,7 @@ const resolvers: Resolvers = {
         throw Error("req.password and req.passwordConfirm don't match")
       }
 
+      console.log('1')
       const existingUserQuery = await db.query(
         sql`SELECT * FROM users WHERE username = ${username}`
       )

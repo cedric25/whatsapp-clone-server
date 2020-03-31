@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Mutation.addChat creates a new chat between current user and specified recipient 1`] = `
+Object {
+  "addChat": null,
+}
+`;
+
+exports[`Mutation.addChat creates a new chat between current user and specified recipient 2`] = `
+Object {
+  "chat": null,
+}
+`;
+
+exports[`Mutation.addChat returns the existing chat if so 1`] = `
+Object {
+  "addChat": null,
+}
+`;
