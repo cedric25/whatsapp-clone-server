@@ -3,19 +3,19 @@ export const validatePassword = (ctx: string, str: string) => {
     throw TypeError(`${ctx} must be a string`)
   }
 
-  validateLength(ctx, str, 8, 30)
+  validateLength(ctx, str, 3, 30)
 
-  if (!/[a-zA-Z]+/.test(str)) {
-    throw TypeError(`${ctx} must contain english letters`)
-  }
+  // if (!/[a-zA-Z]+/.test(str)) {
+  //   throw TypeError(`${ctx} must contain english letters`)
+  // }
 
-  if (!/\d+/.test(str)) {
-    throw TypeError(`${ctx} must contain numbers`)
-  }
+  // if (!/\d+/.test(str)) {
+  //   throw TypeError(`${ctx} must contain numbers`)
+  // }
 
-  if (!/[^\da-zA-Z]+/.test(str)) {
-    throw TypeError(`${ctx} must contain special charachters`)
-  }
+  // if (!/[^\da-zA-Z]+/.test(str)) {
+  //   throw TypeError(`${ctx} must contain special charachters`)
+  // }
 }
 
 export const validateLength = (ctx: string, str: string, ...args: number[]) => {
