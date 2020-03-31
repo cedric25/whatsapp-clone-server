@@ -21,11 +21,9 @@ const pubsub = new PostgresPubSub({
 const server = new ApolloServer({
   schema,
   context: async (session: any) => {
-    console.log('Start to build context...')
-    // Access the request object
-    let req = session.connection
-      ? session.connection.context.request
-      : session.req
+    const isSubscription = !!session.connection
+
+    let req = isSubscription ? session.connection.context.request : session.req
 
     // It's subscription
     if (session.connection) {
@@ -36,7 +34,11 @@ const server = new ApolloServer({
     if (req.cookies.authToken) {
       const username = jwt.verify(req.cookies.authToken, secret) as string
       if (username) {
-        console.log('REQUEST from username', username)
+        console.log(
+          `${
+            isSubscription ? 'SUBSCRIPTION' : 'REQUEST'
+          } from username '${username}'`
+        )
         const { rows } = await pool.query(
           sql`SELECT * FROM users WHERE username = ${username}`
         )
