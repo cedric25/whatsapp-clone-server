@@ -21,6 +21,7 @@
     "express": "^4.17.1",
     "graphql": "^14.6.0",
     "graphql-import": "^1.0.1",
+    "graphql-postgres-subscriptions": "^1.0.5",
     "graphql-scalars": "^1.0.9",
     "graphql-tools": "^4.0.7",
     "jsonwebtoken": "^8.5.1",
