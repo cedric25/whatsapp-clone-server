@@ -4,7 +4,7 @@ scalar URL
 type User {
   id: ID!
   name: String!
-  picture: URL
+  picture: String # Switch back to URL type when all users with a picture URL within DB
 }
 
 type Message {
