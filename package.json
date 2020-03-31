@@ -8,7 +8,7 @@
     "prestart": "yarn codegen",
     "start": "node -r ts-node/register index.ts",
     "nodemon": "nodemon --config nodemonConfig.json",
-    "test": "TZ=\"Europe/Paris\" jest",
+    "test": "TZ=\"Europe/Paris\" jest --runInBand --forceExit",
     "format": "prettier \"**/*.ts\" --write",
     "codegen": "gql-gen"
   },

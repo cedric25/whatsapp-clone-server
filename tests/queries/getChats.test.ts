@@ -1,18 +1,26 @@
 import { createTestClient } from 'apollo-server-testing'
 import { ApolloServer, gql } from 'apollo-server-express'
 import schema from '../../schema'
-import { users } from '../../db'
-
-// jest.spyOn(Date, 'now')
-//   .mockImplementation(() => new Date('2020-03-26T10:00:00.000Z').getTime())
+import { pool, resetDb } from '../../db'
+import sql from 'sql-template-strings'
+import { MyContext } from '../../context'
 
 describe('Query.chats', () => {
+  beforeEach(resetDb)
+
   it('should fetch all chats', async () => {
+    const { rows } = await pool.query(sql`SELECT * FROM users WHERE id = 1`)
+    const currentUser = rows[0]
     const server = new ApolloServer({
       schema,
-      context: () => ({
-        currentUser: users[0],
+      context: async () => ({
+        currentUser,
+        db: await pool.connect(),
       }),
+      formatResponse: (res: any, { context }: { context: MyContext }) => {
+        context.db.release()
+        return res
+      },
     })
 
     const { query } = createTestClient(server)
